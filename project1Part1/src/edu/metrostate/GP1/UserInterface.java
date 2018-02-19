@@ -25,8 +25,8 @@ public class UserInterface {
   private static final int ADD_CREDITCARD = 6;
   private static final int REMOVE_CREDITCARD = 7;
   private static final int lIST_ALL_CUSTOMERS = 8;
-  private static final int ADD_SHOW = 9;
-  private static final int LIST_ALL_SHOWS = 10;
+  private static final int ADD_PLAY = 9;
+  private static final int LIST_ALL_PLAYS = 10;
   private static final int SAVE = 11;
   private static final int RETRIEVE = 12;
   private static final int HELP = 13;
@@ -34,7 +34,7 @@ public class UserInterface {
   /**
    * Made private for singleton pattern.
    * Conditionally looks for any saved data. Otherwise, it gets
-   * a singleton Library object.
+   * a singleton Theatre object.
    */
   private UserInterface() {
     if (yesOrNo("Look for saved data and  use it?")) {
@@ -164,8 +164,8 @@ public class UserInterface {
     System.out.println(ADD_CREDITCARD + " to  add a creditcard");
     System.out.println(REMOVE_CREDITCARD + " to  remove a creditcard");
     System.out.println(lIST_ALL_CUSTOMERS + " to  to list all customers");
-    System.out.println(ADD_SHOW + " to  add a new show");
-    System.out.println(LIST_ALL_SHOWS + " to  list all shows");
+    System.out.println(ADD_PLAY + " to  add a new play");
+    System.out.println(LIST_ALL_PLAYS + " to  list all plays");
     System.out.println(SAVE + " to  save data");
     System.out.println(RETRIEVE + " to  retrieve");
     System.out.println(HELP + " for help");
@@ -190,7 +190,7 @@ public class UserInterface {
   }
   
   /**
-   * Method to be called for removing books.
+   * Method to be called for removing client.
    * Prompts the user for the appropriate values and
    * uses the appropriate Theatre method for removing clients.
    *  
@@ -205,7 +205,7 @@ public class UserInterface {
           System.out.println("Client not found");
           break;
         case Theatre.HAS_SCHEDULED_PLAY:
-          System.out.println("This client has a scheduled show");
+          System.out.println("This client has a scheduled play");
           break;
         case Theatre.OPERATION_FAILED:
           System.out.println("Client could not be removed");
@@ -275,278 +275,146 @@ public class UserInterface {
   
   
   /**
-   * Method to be called for adding a book.
+   * Method to be called for adding a credit card.
    * Prompts the user for the appropriate values and
-   * uses the appropriate Library method for adding the book.
+   * uses the appropriate Theatre method for adding credit card.
    *  
    */
-  public void addBooks() {
-    Book result;
+  public void addCreditCard() {
+    creditCard result;
+    String customerID = getToken("Enter the customer's ID ");
+    if (theatre.searchCustomers(customerID) == null)
+    {
+    	System.out.println("No such customer.");
+        return;
+    }
     do {
-      String title = getToken("Enter  title");
-      String bookID = getToken("Enter id");
-      String author = getToken("Enter author");
-      result = theatre.addBook(title, author, bookID);
+      String creditCard = getToken("Enter credit card numbers");
+      String expiryDate = getToken("Enter date in mm/yy format");
+      result = theatre.addCreditCard(creditCard, expiryDate);
       if (result != null) {
         System.out.println(result);
       } else {
-        System.out.println("Book could not be added");
-      }
-      if (!yesOrNo("Add more books?")) {
-        break;
+        System.out.println("Credit card could not be added");
       }
     } while (true);
   }
+  
   /**
-   * Method to be called for issuing books.
+   * Method to be called for removing credit cards.
    * Prompts the user for the appropriate values and
-   * uses the appropriate Library method for issuing books.
+   * uses the appropriate Theatre method for removing credit cards.
    *  
    */
-  public void issueBooks() {
-    Book result;
-    String memberID = getToken("Enter member id");
-    if (theatre.searchMembership(memberID) == null) {
-      System.out.println("No such member");
-      return;
-    }
-    do {
-      String bookID = getToken("Enter book id");
-      result = theatre.issueBook(memberID, bookID);
-      if (result != null){
-        System.out.println(result.getTitle()+ "   " +  result.getDueDate());
-      } else {
-          System.out.println("Book could not be issued");
-      }
-      if (!yesOrNo("Issue more books?")) {
-        break;
-      }
-    } while (true);
-  }
-  /**
-   * Method to be called for renewing books.
-   * Prompts the user for the appropriate values and
-   * uses the appropriate Library method for renewing books.
-   *  
-   */
-  public void renewBooks() {
-    Book result;
-    String memberID = getToken("Enter member id");
-    if (theatre.searchMembership(memberID) == null) {
-      System.out.println("No such member");
-      return;
-    }
-    Iterator issuedBooks = theatre.getBooks(memberID);
-    while (issuedBooks.hasNext()){
-      Book book = (Book)(issuedBooks.next());
-      if (yesOrNo(book.getTitle())) {
-        result = theatre.renewBook(book.getId(), memberID);
-        if (result != null){
-          System.out.println(result.getTitle()+ "   " + result.getDueDate());
-        } else {
-          System.out.println("Book is not renewable");
-        }
-      }
-    }
-  }
-  /**
-   * Method to be called for returning books.
-   * Prompts the user for the appropriate values and
-   * uses the appropriate Library method for returning books.
-   *  
-   */
-  public void returnBooks() {
+  public void removeCreditCard() {
     int result;
+    String customerID = getToken("Enter customer ID");
+    if (theatre.searchCustomers(customerID) == null)
+    {
+    	System.out.println("No such customer.");
+        return;
+    }
     do {
-      String bookID = getToken("Enter book id");
-      result = theatre.returnBook(bookID);
-      switch(result) {
-        case Theatre.BOOK_NOT_FOUND:
-          System.out.println("No such Book in Library");
-          break;
-        case Theatre.BOOK_NOT_ISSUED:
-          System.out.println(" Book  was not checked out");
-          break;
-        case Theatre.BOOK_HAS_HOLD:
-          System.out.println("Book has a hold");
-          break;
-        case Theatre.OPERATION_FAILED:
-          System.out.println("Book could not be returned");
-          break;
-        case Theatre.OPERATION_COMPLETED:
-          System.out.println(" Book has been returned");
-          break;
-        default:
-          System.out.println("An error has occurred");
-      }
-      if (!yesOrNo("Return more books?")) {
-        break;
-      }
-    } while (true);
-  }
-  /**
-   * Method to be called for removing books.
-   * Prompts the user for the appropriate values and
-   * uses the appropriate Library method for removing books.
-   *  
-   */
-  public void removeBooks() {
-    int result;
-    do {
-      String bookID = getToken("Enter book id");
-      result = theatre.removeBook(bookID);
+      String creditCard = getToken("Enter credit card number");
+      result = theatre.removeCreditCard(creditCard);
       switch(result){
-        case Theatre.BOOK_NOT_FOUND:
-          System.out.println("No such Book in Library");
+        case Theatre.CREDITCARD_NOT_FOUND:
+          System.out.println("No such credit card found");
           break;
-        case Theatre.BOOK_ISSUED:
-          System.out.println(" Book is currently checked out");
-          break;
-        case Theatre.BOOK_HAS_HOLD:
-          System.out.println("Book has a hold");
+        case Theatre.CREDITCARD_ONLY_ONE:
+          System.out.println("Creditcard can be removed. It's the only one.");
           break;
         case Theatre.OPERATION_FAILED:
-          System.out.println("Book could not be removed");
+          System.out.println("Credit card could not be removed");
           break;
         case Theatre.OPERATION_COMPLETED:
-          System.out.println(" Book has been removed");
+          System.out.println(" Credit card has been removed");
           break;
         default:
           System.out.println("An error has occurred");
       }
-      if (!yesOrNo("Remove more books?")) {
-        break;
-      }
     } while (true);
   }
+  
   /**
-   * Method to be called for placing a hold.
-   * Prompts the user for the appropriate values and
-   * uses the appropriate Library method for placing a hold.
-   *  
+   * Method to be called to list all customers.
+   * uses the appropriate Theatre method for listing customers. 
    */
-  public void placeHold() {
-    String memberID = getToken("Enter member id");
-    String bookID = getToken("Enter book id");
-    int duration = getNumber("Enter duration of hold");
-    int result = theatre.placeHold(memberID, bookID, duration);
-    switch(result){
-      case Theatre.BOOK_NOT_FOUND:
-        System.out.println("No such Book in Library");
-        break;
-      case Theatre.BOOK_NOT_ISSUED:
-        System.out.println(" Book is not checked out");
-        break;
-      case Theatre.NO_SUCH_MEMBER:
-        System.out.println("Not a valid member ID");
-        break;
-      case Theatre.HOLD_PLACED:
-        System.out.println("A hold has been placed");
-        break;
-      default:
-        System.out.println("An error has occurred");
-    }
+  public void listAllCustomers() {
+	  Customers result;
+	  result = theatre.getCustomers(); 
   }
+  
   /**
-   * Method to be called for removing a holds.
+   * Method to be called for adding a new play.
    * Prompts the user for the appropriate values and
-   * uses the appropriate Library method for removing a hold.
+   * uses the appropriate Theatre method for adding a play.
    *  
    */
-  public void removeHold() {
-    String memberID = getToken("Enter member id");
-    String bookID = getToken("Enter book id");
-    int result = theatre.removeHold(memberID, bookID);
-    switch(result){
-      case Theatre.BOOK_NOT_FOUND:
-        System.out.println("No such Book in Library");
-        break;
-      case Theatre.NO_SUCH_MEMBER:
-        System.out.println("Not a valid member ID");
-        break;
-      case Theatre.OPERATION_COMPLETED:
-        System.out.println("The hold has been removed");
-        break;
-      default:
-        System.out.println("An error has occurred");
+  public void addPlay() {
+    Play result;
+    String clientID = getToken("Enter the client's id");
+    if (theatre.searchClients(clientID) == null) {
+      System.out.println("No such client");
+      return;
     }
-  }
-  /**
-   * Method to be called for processing books.
-   * Prompts the user for the appropriate values and
-   * uses the appropriate Library method for processing books.
-   *  
-   */
-  public void processHolds() {
-    Member result;
     do {
-      String bookID = getToken("Enter book id");
-      result = theatre.processHold(bookID);
-      if (result != null) {
-        System.out.println(result);
+      String playName = getToken("Enter the name for the play");
+      Calendar startDate  = getDate("Please enter the begining date as mm/dd/yy");
+      Calendar endDate  = getDate("Please enter the date for which you want records as mm/dd/yy");
+      result = theatre.addPlay(playName, startDate,endDate);
+      if (result != null){
+        System.out.println(result.getTitle()+ "   " +  result.getStartDate()+ "-"+ result.getEndDate);
       } else {
-        System.out.println("No valid holds left");
-      }
-      if (!yesOrNo("Process more books?")) {
-        break;
+          System.out.println("Play could not be added.");
       }
     } while (true);
   }
+  
   /**
-   * Method to be called for displaying transactions.
-   * Prompts the user for the appropriate values and
-   * uses the appropriate Library method for displaying transactions.
-   *  
+   * Method to be called to list all plays.
+   * uses the appropriate Theatre method for listing plays. 
    */
-  public void getTransactions() {
-    Iterator result;
-    String memberID = getToken("Enter member id");
-    Calendar date  = getDate("Please enter the date for which you want records as mm/dd/yy");
-    result = theatre.getTransactions(memberID,date);
-    if (result == null) {
-      System.out.println("Invalid Member ID");
-    } else {
-      while(result.hasNext()) {
-        Transaction transaction = (Transaction) result.next();
-        System.out.println(transaction.getType() + "   "   + transaction.getTitle() + "\n");
-      }
-      System.out.println("\n  There are no more transactions \n" );
-    }
+  public void listAllPlays() {
+	  Play result;
+	  result = theatre.getPlays(); 
   }
+
   /**
-   * Method to be called for saving the Library object.
-   * Uses the appropriate Library method for saving.
+   * Method to be called for saving the Theatre object.
+   * Uses the appropriate Theatre method for saving.
    *  
    */
   private void save() {
     if (theatre.save()) {
-      System.out.println(" The library has been successfully saved in the file LibraryData \n" );
+      System.out.println(" The theatre has been successfully saved in the file TheatreData \n" );
     } else {
       System.out.println(" There has been an error in saving \n" );
     }
   }
   /**
    * Method to be called for retrieving saved data.
-   * Uses the appropriate Library method for retrieval.
+   * Uses the appropriate Theatre method for retrieval.
    *  
    */
   private void retrieve() {
     try {
-      Theatre tempLibrary = Theatre.retrieve();
-      if (tempLibrary != null) {
-        System.out.println(" The library has been successfully retrieved from the file LibraryData \n" );
-        theatre = tempLibrary;
+      Theatre tempTheatre = Theatre.retrieve();
+      if (tempTheatre != null) {
+        System.out.println(" The theatre has been successfully retrieved from the file TheatreData \n" );
+        theatre = tempTheatre;
       } else {
-        System.out.println("File doesnt exist; creating new library" );
+        System.out.println("File doesnt exist; creating new theatre" );
         theatre = Theatre.instance();
       }
     } catch(Exception cnfe) {
       cnfe.printStackTrace();
     }
   }
+  
   /**
    * Orchestrates the whole process.
-   * Calls the appropriate method for the different functionalties.
+   * Calls the appropriate method for the different functionalities.
    *  
    */
   public void process() {
@@ -556,23 +424,23 @@ public class UserInterface {
       switch (command) {
         case ADD_CLIENT:        addClient();
                                 break;
-        case REMOVE_CLIENT:         addBooks();
+        case REMOVE_CLIENT:         removeClient();
                                 break;
-        case LIST_ALL_CLIENTS:       issueBooks();
+        case LIST_ALL_CLIENTS:       listAllClients();
                                 break;
-        case ADD_CUSTOMER:      returnBooks();
+        case ADD_CUSTOMER:      addCustomer();
                                 break;
-        case ADD_CREDITCARD:      removeBooks();
+        case ADD_CREDITCARD:      addCreditCard();
                                 break;
-        case REMOVE_CUSTOMER:       renewBooks();
+        case REMOVE_CUSTOMER:       removeCustomer();
                                 break;
-        case REMOVE_CREDITCARD:        placeHold();
+        case REMOVE_CREDITCARD:        removeCreditCard();
                                 break;
-        case lIST_ALL_CUSTOMERS:       removeHold();
+        case lIST_ALL_CUSTOMERS:       listAllCustomers();
                                 break;
-        case ADD_SHOW:      processHolds();
+        case ADD_PLAY:      addPlay();
                                 break;
-        case LIST_ALL_SHOWS:  getTransactions();
+        case LIST_ALL_PLAYS:  listAllPlays();
                                 break;
         case SAVE:              save();
                                 break;
@@ -583,6 +451,7 @@ public class UserInterface {
       }
     }
   }
+  
   /**
    * The method to start the application. Simply calls process().
    * @param args not used
